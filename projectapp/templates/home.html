@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreshMarket — Oziq-ovqat do'koni</title>
+<meta name="description" content="Yangi va sifatli oziq-ovqat mahsulotlari — tez yetkazib berish">
+
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('fm_theme');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+})();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#fbf8f1; --bg2:#ffffff; --surface:#ffffff; --text:#1c2a22; --muted:#5f6f66;
+  --border:#e8e3d6; --soft:#f1ecdd; --primary:#2e9e5b; --primary-d:#22804a;
+  --accent:#ff8a3d; --accent-d:#e9701f; --danger:#e5484d;
+  --shadow:0 18px 45px -22px rgba(30,60,40,.35); --radius:22px;
+  --nav-fg:#fff; --nav-bg:rgba(251,248,241,.92); --nav-fg2:#1c2a22;
+}
+[data-theme="dark"]{
+  --bg:#0c1511; --bg2:#101c16; --surface:#14241c; --text:#eaf5ee; --muted:#9bb0a3;
+  --border:#22372c; --soft:#1a2c22; --shadow:0 18px 45px -22px rgba(0,0,0,.8);
+  --nav-bg:rgba(12,21,17,.92); --nav-fg2:#eaf5ee;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;
+  -webkit-font-smoothing:antialiased;transition:background .4s,color .4s;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Fraunces',serif;line-height:1.15}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+.container{width:min(1240px,92%);margin:0 auto}
+body.lock{overflow:hidden}
+
+/* preloader */
+#loader{position:fixed;inset:0;background:var(--bg);z-index:999;display:grid;place-items:center;transition:opacity .6s,visibility .6s}
+#loader.hide{opacity:0;visibility:hidden}
+.load-box{text-align:center}
+.load-emoji{font-size:4rem;animation:bounceE 1s infinite}
+.load-bar{width:160px;height:5px;border-radius:9px;background:var(--soft);margin:18px auto 0;overflow:hidden}
+.load-bar i{display:block;height:100%;width:40%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:9px;animation:slide 1s infinite}
+@keyframes bounceE{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-16px) rotate(6deg)}}
+@keyframes slide{0%{margin-left:-40%}100%{margin-left:100%}}
+
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:600;background:linear-gradient(90deg,var(--primary),var(--accent))}
+
+/* top strip */
+.strip{background:linear-gradient(90deg,var(--primary-d),var(--primary));color:#fff;font-size:.85rem;overflow:hidden;white-space:nowrap}
+.strip-track{display:inline-flex;gap:60px;padding:8px 0;animation:marq 28s linear infinite}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* navbar */
+.navbar{position:sticky;top:0;z-index:300;padding:14px 0;transition:.35s;background:transparent;--fg:var(--nav-fg2)}
+.navbar.scrolled{background:var(--nav-bg);backdrop-filter:blur(14px);padding:9px 0;box-shadow:0 8px 28px rgba(0,0,0,.12)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:800;color:var(--fg);display:flex;align-items:center;gap:8px}
+.logo b{color:var(--primary)} .logo em{font-style:normal;color:var(--accent)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-weight:500;font-size:.95rem;color:var(--fg);opacity:.85;position:relative;transition:.25s}
+.nav-links a::after{content:'';position:absolute;left:0;bottom:-6px;width:0;height:2px;background:var(--accent);transition:.3s}
+.nav-links a:hover,.nav-links a.active{opacity:1}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:10px}
+.lang{display:flex;padding:3px;border-radius:50px;border:1px solid var(--border);background:var(--surface)}
+.lang button{border:0;background:none;cursor:pointer;font-size:.75rem;font-weight:700;padding:5px 10px;border-radius:50px;color:var(--text);transition:.25s}
+.lang button.active{background:var(--primary);color:#fff}
+.icon-btn{position:relative;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:1.1rem;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:.3s;display:grid;place-items:center}
+.icon-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);transform:translateY(-2px)}
+.cart-count{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:20px;background:var(--accent);color:#fff;font-size:.7rem;font-weight:700;display:grid;place-items:center;transition:transform .3s}
+.cart-count.pop{transform:scale(1.5)}
+.burger{display:none}
+
+/* hero */
+.hero{position:relative;padding:60px 0 110px;overflow:hidden;
+  background:radial-gradient(900px 500px at 85% 10%,rgba(46,158,91,.18),transparent 60%),radial-gradient(700px 400px at 5% 90%,rgba(255,138,61,.16),transparent 60%)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:8px 18px;border-radius:50px;background:var(--soft);border:1px solid var(--border);font-size:.85rem;font-weight:600;color:var(--primary);margin-bottom:22px}
+.hero h1{font-size:clamp(2.5rem,5.6vw,4.6rem);font-weight:800;margin-bottom:22px}
+.hero h1 span{background:linear-gradient(90deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:1.12rem;color:var(--muted);max-width:520px;margin-bottom:34px}
+.btn-row{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;border-radius:50px;font-weight:600;font-size:1rem;cursor:pointer;border:2px solid transparent;transition:.3s}
+.btn-p{background:var(--primary);color:#fff;box-shadow:0 14px 30px -10px rgba(46,158,91,.8)}
+.btn-p:hover{background:var(--primary-d);transform:translateY(-3px)}
+.btn-o{border-color:var(--border);background:var(--surface);color:var(--text)}
+.btn-o:hover{border-color:var(--primary);color:var(--primary);transform:translateY(-3px)}
+.btn-a{background:var(--accent);color:#fff;box-shadow:0 14px 30px -10px rgba(255,138,61,.8)}
+.btn-a:hover{background:var(--accent-d);transform:translateY(-3px)}
+.hero-mini{display:flex;gap:34px;margin-top:44px;flex-wrap:wrap}
+.hero-mini strong{font-family:'Fraunces',serif;font-size:1.9rem;color:var(--primary);display:block}
+.hero-mini span{font-size:.85rem;color:var(--muted)}
+
+.hero-art{position:relative;height:540px}
+.hero-img{position:absolute;border-radius:36px;object-fit:cover;box-shadow:var(--shadow)}
+.hero-img.i1{width:72%;height:78%;right:0;top:0;border-radius:200px 200px 36px 36px;animation:floatA 8s ease-in-out infinite}
+.hero-img.i2{width:46%;height:42%;left:0;bottom:2%;border:8px solid var(--bg);animation:floatB 9s ease-in-out infinite}
+@keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes floatB{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(14px) rotate(2deg)}}
+.float-card{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:12px 16px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center;font-size:.85rem;z-index:3}
+.float-card .em{font-size:1.6rem}
+.float-card b{display:block;font-size:.95rem}
+.float-card small{color:var(--muted)}
+.fc1{top:8%;left:2%;animation:floatB 7s ease-in-out infinite}
+.fc2{bottom:8%;right:0;animation:floatA 6s ease-in-out infinite}
+.emoji-float{position:absolute;font-size:2.2rem;opacity:.9;animation:floatA 6s ease-in-out infinite;z-index:1}
+
+/* sections */
+section{padding:100px 0}
+.sec-head{text-align:center;max-width:640px;margin:0 auto 56px}
+.eyebrow{color:var(--primary);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:2px;display:block;margin-bottom:10px}
+.sec-head h2{font-size:clamp(2rem,4vw,2.9rem);margin-bottom:14px}
+.sec-head p{color:var(--muted)}
+
+/* categories */
+.cats{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
+.cat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px 10px;text-align:center;cursor:pointer;transition:.35s;position:relative;overflow:hidden}
+.cat:hover,.cat.active{transform:translateY(-8px);border-color:var(--primary);box-shadow:var(--shadow)}
+.cat.active{background:linear-gradient(160deg,var(--primary),var(--primary-d));color:#fff}
+.cat .ce{font-size:2.5rem;display:block;margin-bottom:8px;transition:transform .4s}
+.cat:hover .ce{transform:scale(1.2) rotate(-8deg)}
+.cat b{font-size:.95rem}
+
+/* products */
+.shop{background:var(--bg2)}
+.toolbar{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px;align-items:center}
+.search{flex:1;min-width:230px;position:relative}
+.search input{width:100%;padding:14px 20px 14px 48px;border-radius:50px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;outline:none;transition:.3s}
+.search input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(46,158,91,.15)}
+.search::before{content:'🔍';position:absolute;left:18px;top:50%;transform:translateY(-50%)}
+select.sort{padding:14px 20px;border-radius:50px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.95rem;cursor:pointer;outline:none}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:.4s;display:flex;flex-direction:column;position:relative}
+.card:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
+.card-img{position:relative;height:200px;overflow:hidden;background:var(--soft);cursor:pointer}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .7s}
+.card:hover .card-img img{transform:scale(1.1)}
+.tag{position:absolute;top:12px;left:12px;padding:4px 12px;border-radius:50px;background:var(--accent);color:#fff;font-size:.75rem;font-weight:700;z-index:2}
+.tag.new{background:var(--primary)}
+.fav{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.9);cursor:pointer;font-size:1rem;z-index:2;transition:.3s}
+.fav:hover{transform:scale(1.2)}
+.card-body{padding:18px 18px 20px;display:flex;flex-direction:column;flex:1}
+.card-body small{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:1px}
+.card-body h3{font-size:1.15rem;margin:4px 0 6px}
+.stars{color:#f5a623;font-size:.85rem;margin-bottom:12px}
+.stars span{color:var(--muted);margin-left:4px}
+.price-row{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.price b{font-size:1.1rem;color:var(--primary)}
+.price s{display:block;font-size:.8rem;color:var(--muted)}
+.add{width:44px;height:44px;border-radius:50%;border:0;background:var(--primary);color:#fff;font-size:1.3rem;cursor:pointer;transition:.3s}
+.add:hover{background:var(--accent);transform:rotate(90deg) scale(1.1)}
+.no-res{text-align:center;padding:60px 0;color:var(--muted);grid-column:1/-1;font-size:1.1rem}
+
+/* deal */
+.deal-box{border-radius:32px;padding:60px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#1a6b3d,#2e9e5b 55%,#ff8a3d)}
+.deal-box::after{content:'';position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.12);top:-160px;right:-100px}
+.deal-box>*{position:relative;z-index:1}
+.deal-box h2{font-size:clamp(2rem,4vw,3.1rem);margin-bottom:14px}
+.deal-box p{opacity:.9;margin-bottom:26px;max-width:460px}
+.timer{display:flex;gap:12px;margin-bottom:28px}
+.timer div{background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border-radius:16px;padding:12px 4px;min-width:74px;text-align:center}
+.timer b{font-family:'Fraunces',serif;font-size:1.9rem;display:block;line-height:1.1}
+.timer small{font-size:.72rem;opacity:.85}
+.deal-box img{border-radius:28px;height:340px;width:100%;object-fit:cover;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);animation:floatA 7s ease-in-out infinite}
+
+/* features */
+.feats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.feat{padding:34px 26px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);transition:.35s}
+.feat:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
+.feat .ic{width:62px;height:62px;border-radius:18px;display:grid;place-items:center;font-size:1.7rem;margin-bottom:18px;background:linear-gradient(135deg,var(--primary),#6fd39a);transition:transform .4s}
+.feat:hover .ic{transform:rotate(-8deg) scale(1.1)}
+.feat h3{font-size:1.2rem;margin-bottom:8px}
+.feat p{color:var(--muted);font-size:.95rem}
+
+/* steps */
+.steps-wrap{background:var(--bg2)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;position:relative}
+.step{text-align:center;padding:10px 20px}
+.step .n{width:74px;height:74px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;font-family:'Fraunces',serif;font-size:1.8rem;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:0 14px 30px -10px rgba(46,158,91,.7)}
+.step h3{margin-bottom:8px}
+.step p{color:var(--muted)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 10px}
+.stat{text-align:center;border-right:1px solid var(--border)}
+.stat:last-child{border:0}
+.stat b{font-family:'Fraunces',serif;font-size:2.5rem;color:var(--primary);display:block}
+.stat span{color:var(--muted);font-size:.92rem}
+
+/* testimonials */
+.tslider{max-width:780px;margin:0 auto;position:relative}
+.tview{overflow:hidden}
+.ttrack{display:flex;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.tcard{min-width:100%;padding:44px 40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);text-align:center;box-shadow:var(--shadow)}
+.tcard p{font-size:1.15rem;margin-bottom:22px;font-style:italic}
+.tcard .av{width:60px;height:60px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-size:1.8rem;background:var(--soft)}
+.tcard b{display:block}.tcard small{color:var(--muted)}
+.dots{display:flex;justify-content:center;gap:9px;margin-top:22px}
+.dots button{width:10px;height:10px;border-radius:50%;border:0;background:var(--border);cursor:pointer;transition:.3s}
+.dots button.on{width:30px;border-radius:10px;background:var(--primary)}
+
+/* newsletter */
+.news{background:linear-gradient(135deg,#0f2a1c,#1d5a38);border-radius:32px;padding:70px 40px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.news::before{content:'';position:absolute;width:360px;height:360px;border-radius:50%;background:var(--accent);filter:blur(130px);opacity:.35;bottom:-140px;left:-80px}
+.news>*{position:relative}
+.news h2{font-size:clamp(1.9rem,4vw,2.8rem);margin-bottom:12px}
+.news p{opacity:.8;max-width:520px;margin:0 auto 28px}
+.news form{display:flex;gap:10px;max-width:520px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+.news input{flex:1;min-width:220px;padding:15px 22px;border-radius:50px;border:0;font-size:1rem;outline:none}
+
+/* footer */
+footer{background:#0b1812;color:rgba(255,255,255,.7);padding:70px 0 26px;margin-top:100px}
+.fgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:44px;margin-bottom:44px}
+footer .logo{color:#fff}
+footer h4{color:#fff;margin-bottom:16px;font-size:1.05rem}
+footer ul{list-style:none}footer li{margin-bottom:10px}
+footer a:hover{color:var(--accent)}
+.social{display:flex;gap:10px;margin-top:18px}
+.social a{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;transition:.3s}
+.social a:hover{background:var(--primary);transform:translateY(-3px)}
+.copy{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;text-align:center;font-size:.88rem}
+
+/* cart drawer */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:.35s;z-index:700}
+.overlay.show{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:var(--bg);z-index:710;transform:translateX(105%);transition:transform .45s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.35)}
+.drawer.show{transform:none}
+.dr-head{display:flex;justify-content:space-between;align-items:center;padding:22px 24px;border-bottom:1px solid var(--border)}
+.dr-head h3{font-size:1.4rem}
+.dr-body{flex:1;overflow-y:auto;padding:16px 24px}
+.empty-cart{text-align:center;padding:70px 0;color:var(--muted)}
+.empty-cart span{font-size:4rem;display:block;margin-bottom:10px}
+.ci{display:grid;grid-template-columns:70px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);animation:fadeUp .4s both}
+.ci img{width:70px;height:70px;border-radius:14px;object-fit:cover;background:var(--soft)}
+.ci b{font-size:.95rem;display:block}.ci small{color:var(--muted)}
+.qty{display:inline-flex;align-items:center;gap:10px;margin-top:6px;border:1px solid var(--border);border-radius:50px;padding:2px 6px}
+.qty button{width:26px;height:26px;border-radius:50%;border:0;background:var(--soft);color:var(--text);cursor:pointer;font-weight:700}
+.qty button:hover{background:var(--primary);color:#fff}
+.rm{background:none;border:0;cursor:pointer;color:var(--danger);font-size:1.1rem}
+.dr-foot{padding:20px 24px;border-top:1px solid var(--border);background:var(--surface)}
+.tot{display:flex;justify-content:space-between;font-size:1.15rem;font-weight:700;margin-bottom:14px}
+.tot span:last-child{color:var(--primary)}
+.dr-foot .btn{width:100%;justify-content:center}
+.form-in{width:100%;padding:13px 18px;margin-bottom:10px;border-radius:14px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.95rem;outline:none;font-family:inherit}
+.form-in:focus{border-color:var(--primary)}
+.checkout{display:none}.checkout.show{display:block}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:720;display:grid;place-items:center;padding:20px;opacity:0;visibility:hidden;transition:.35s}
+.modal.show{opacity:1;visibility:visible}
+.m-box{background:var(--bg);border-radius:28px;max-width:860px;width:100%;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;position:relative;transform:scale(.9);transition:.4s;box-shadow:0 40px 90px -20px rgba(0,0,0,.6)}
+.modal.show .m-box{transform:none}
+.m-box img{width:100%;height:100%;min-height:380px;object-fit:cover;background:var(--soft)}
+.m-info{padding:40px 34px}
+.m-info h3{font-size:1.9rem;margin:6px 0 10px}
+.m-info p{color:var(--muted);margin-bottom:18px}
+.m-close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);cursor:pointer;font-size:1.1rem;z-index:3;color:var(--text)}
+.m-price{font-size:1.8rem;font-weight:700;color:var(--primary);margin-bottom:20px}
+.m-price s{font-size:1rem;color:var(--muted);margin-left:8px;font-weight:400}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,120px);background:var(--text);color:var(--bg);padding:14px 26px;border-radius:50px;font-weight:600;z-index:900;transition:.5s cubic-bezier(.2,.8,.2,1);box-shadow:var(--shadow);max-width:92%}
+#toast.show{transform:translate(-50%,0)}
+#toTop{position:fixed;right:22px;bottom:22px;width:48px;height:48px;border-radius:50%;border:0;background:var(--primary);color:#fff;font-size:1.2rem;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(20px);transition:.35s;z-index:400;box-shadow:0 10px 25px -6px rgba(46,158,91,.7)}
+#toTop.show{opacity:1;pointer-events:auto;transform:none}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.reveal{opacity:0;transform:translateY(40px);transition:1s cubic-bezier(.2,.7,.2,1)}
+.reveal.show{opacity:1;transform:none}
+.hero-txt>*{animation:fadeUp .9s both}
+.hero-txt>*:nth-child(2){animation-delay:.12s}.hero-txt>*:nth-child(3){animation-delay:.24s}
+.hero-txt>*:nth-child(4){animation-delay:.36s}.hero-txt>*:nth-child(5){animation-delay:.48s}
+
+/* responsive */
+@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}.cats{grid-template-columns:repeat(3,1fr)}.feats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:980px){
+  .burger{display:grid}
+  .nav-links{display:none;position:absolute;top:100%;left:0;width:100%;flex-direction:column;background:var(--nav-bg);backdrop-filter:blur(14px);padding:22px 6%;gap:16px;box-shadow:0 20px 30px rgba(0,0,0,.15)}
+  .nav-links.open{display:flex}
+  .hero-grid{grid-template-columns:1fr}.hero-art{height:420px;order:-1}
+  .deal-box{grid-template-columns:1fr;padding:40px 26px}
+  .steps{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr);gap:26px 0}.stat:nth-child(2){border:0}
+  .fgrid{grid-template-columns:1fr 1fr}
+  .m-box{grid-template-columns:1fr}.m-box img{min-height:220px;height:240px}
+  section{padding:70px 0}
+}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr);gap:14px}.card-img{height:150px}.feats{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}.cats{grid-template-columns:repeat(2,1fr)}.lang button{padding:4px 8px}.timer div{min-width:64px}}
+@media(max-width:420px){.grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div id="loader"><div class="load-box"><div class="load-emoji">🥑</div><div class="load-bar"><i></i></div></div></div>
+<div id="progress"></div>
+
+<div class="strip"><div class="strip-track" id="stripTrack"></div></div>
+
+<header class="navbar" id="navbar">
+  <div class="container nav-in">
+    <a href="#home" class="logo">🥬 <span><b>Fresh</b><em>Market</em></span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" data-i="nav_home">Bosh sahifa</a></li>
+      <li><a href="#categories" data-i="nav_cat">Kategoriyalar</a></li>
+      <li><a href="#shop" data-i="nav_shop">Mahsulotlar</a></li>
+      <li><a href="#deal" data-i="nav_deal">Aksiya</a></li>
+      <li><a href="#why" data-i="nav_why">Afzalliklar</a></li>
+      <li><a href="#contact" data-i="nav_contact">Aloqa</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang" id="lang"><button data-l="uz">UZ</button><button data-l="ru">RU</button><button data-l="en">EN</button></div>
+      <button class="icon-btn" id="themeBtn" aria-label="Theme">🌙</button>
+      <button class="icon-btn" id="cartBtn" aria-label="Cart">🛒<span class="cart-count" id="cartCount">0</span></button>
+      <button class="icon-btn burger" id="burger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="container hero-grid">
+    <div class="hero-txt">
+      <span class="pill">🌿 <span data-i="hero_pill">100% yangi va tabiiy</span></span>
+      <h1><span data-i="hero_t1">Yangi mahsulotlar</span> <span data-i="hero_t2" style="-webkit-text-fill-color:var(--text);color:var(--text);background:none">eshigingizgacha</span></h1>
+      <p data-i="hero_p">Fermer xo'jaliklaridan to'g'ridan-to'g'ri — meva, sabzavot, go'sht, sut mahsulotlari va yana minglab tovarlar. 60 daqiqada yetkazamiz.</p>
+      <div class="btn-row">
+        <a href="#shop" class="btn btn-p"><span data-i="hero_b1">Xarid qilish</span> →</a>
+        <a href="#deal" class="btn btn-o" data-i="hero_b2">Aksiyalar</a>
+      </div>
+      <div class="hero-mini">
+        <div><strong data-count="5000" data-suf="+">0</strong><span data-i="hm1">Mahsulotlar</span></div>
+        <div><strong data-count="25" data-suf="k+">0</strong><span data-i="hm2">Mijozlar</span></div>
+        <div><strong data-count="60" data-suf=" min">0</strong><span data-i="hm3">Yetkazish</span></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img class="hero-img i1" data-img="photo-1542838132-92c53300491e" data-w="900" data-fb="🛒" alt="Fresh groceries">
+      <img class="hero-img i2" data-img="photo-1498837167922-ddd27525d352" data-w="600" data-fb="🥗" alt="Healthy food">
+      <div class="float-card fc1"><span class="em">🚚</span><div><b data-i="fc1b">Tez yetkazish</b><small data-i="fc1s">Bepul, 60 daqiqada</small></div></div>
+      <div class="float-card fc2"><span class="em">⭐</span><div><b>4.9 / 5</b><small data-i="fc2s">12 000+ sharh</small></div></div>
+      <span class="emoji-float" style="top:2%;right:6%;animation-delay:-2s">🍎</span>
+      <span class="emoji-float" style="top:46%;left:-2%;animation-delay:-4s">🥕</span>
+      <span class="emoji-float" style="bottom:0;right:38%;animation-delay:-1s">🍋</span>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section id="categories" style="padding-top:40px">
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow" data-i="cat_eb">Kategoriyalar</span><h2 data-i="cat_t">Nima qidiryapsiz?</h2><p data-i="cat_p">Kerakli bo'limni tanlang — mahsulotlar darhol filtrlanadi.</p></div>
+    <div class="cats reveal" id="cats"></div>
+  </div>
+</section>
+
+<!-- SHOP -->
+<section class="shop" id="shop">
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow" data-i="shop_eb">Mahsulotlar</span><h2 data-i="shop_t">Eng yaxshi takliflar</h2><p data-i="shop_p">Har kuni yangilanadigan sifatli mahsulotlar.</p></div>
+    <div class="toolbar reveal">
+      <div class="search"><input id="q" type="search" data-iph="search_ph" placeholder="Mahsulot qidirish..."></div>
+      <select class="sort" id="sort">
+        <option value="def" data-i="s_def">Tartib: standart</option>
+        <option value="asc" data-i="s_asc">Narx: arzondan qimmatga</option>
+        <option value="desc" data-i="s_desc">Narx: qimmatdan arzonga</option>
+        <option value="rate" data-i="s_rate">Reyting bo'yicha</option>
+      </select>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<!-- DEAL -->
+<section id="deal">
+  <div class="container">
+    <div class="deal-box reveal">
+      <div>
+        <span class="pill" style="background:rgba(255,255,255,.18);color:#fff;border-color:transparent">🔥 <span data-i="deal_pill">Haftalik aksiya</span></span>
+        <h2 data-i="deal_t">Barcha mevalarga 30% chegirma!</h2>
+        <p data-i="deal_p">Faqat shu hafta: yangi mavsum mevalari maxsus narxlarda. Shoshiling, miqdor cheklangan!</p>
+        <div class="timer" id="timer">
+          <div><b id="td">00</b><small data-i="t_d">kun</small></div>
+          <div><b id="th">00</b><small data-i="t_h">soat</small></div>
+          <div><b id="tm">00</b><small data-i="t_m">daqiqa</small></div>
+          <div><b id="ts">00</b><small data-i="t_s">soniya</small></div>
+        </div>
+        <a href="#shop" class="btn btn-a" data-i="deal_b" data-filter="fruits">Hozir xarid qilish</a>
+      </div>
+      <img data-img="photo-1610832958506-aa56368176cf" data-w="800" data-fb="🍊" alt="Fresh fruits">
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why" style="padding-top:20px">
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow" data-i="why_eb">Afzalliklarimiz</span><h2 data-i="why_t">Nega aynan FreshMarket?</h2><p data-i="why_p">Sifat, tezlik va ishonch — har bir buyurtmada.</p></div>
+    <div class="feats">
+      <div class="feat reveal"><div class="ic">🌱</div><h3 data-i="w1t">Tabiiy va yangi</h3><p data-i="w1p">Mahsulotlar fermerlardan kunlik keltiriladi.</p></div>
+      <div class="feat reveal"><div class="ic">🚚</div><h3 data-i="w2t">Tez yetkazish</h3><p data-i="w2p">Buyurtmangiz 60 daqiqa ichida eshigingizda.</p></div>
+      <div class="feat reveal"><div class="ic">💳</div><h3 data-i="w3t">Qulay to'lov</h3><p data-i="w3p">Naqd, karta yoki onlayn — o'zingizga qulay usulda.</p></div>
+      <div class="feat reveal"><div class="ic">🛡️</div><h3 data-i="w4t">Sifat kafolati</h3><p data-i="w4p">Mos kelmasa — pulni qaytaramiz yoki almashtiramiz.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="steps-wrap">
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow" data-i="st_eb">Qanday ishlaydi</span><h2 data-i="st_t">3 qadamda buyurtma</h2></div>
+    <div class="steps">
+      <div class="step reveal"><div class="n">1</div><h3 data-i="st1t">Tanlang</h3><p data-i="st1p">Katalogdan kerakli mahsulotlarni savatga qo'shing.</p></div>
+      <div class="step reveal"><div class="n">2</div><h3 data-i="st2t">Buyurtma bering</h3><p data-i="st2p">Manzil va telefon raqamingizni kiriting.</p></div>
+      <div class="step reveal"><div class="n">3</div><h3 data-i="st3t">Qabul qiling</h3><p data-i="st3p">Kuryer mahsulotlarni eshigingizgacha olib keladi.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section style="padding-bottom:40px">
+  <div class="container">
+    <div class="stats reveal">
+      <div class="stat"><b data-count="5000" data-suf="+">0</b><span data-i="hm1">Mahsulotlar</span></div>
+      <div class="stat"><b data-count="25" data-suf="k+">0</b><span data-i="hm2">Mijozlar</span></div>
+      <div class="stat"><b data-count="120" data-suf="+">0</b><span data-i="sx3">Hamkor fermerlar</span></div>
+      <div class="stat"><b data-count="99" data-suf="%">0</b><span data-i="sx4">Mamnun mijozlar</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow" data-i="tm_eb">Sharhlar</span><h2 data-i="tm_t">Mijozlarimiz nima deydi</h2></div>
+    <div class="tslider reveal">
+      <div class="tview"><div class="ttrack" id="ttrack"></div></div>
+      <div class="dots" id="dots"></div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER + CONTACT -->
+<section id="contact" style="padding-top:20px">
+  <div class="container">
+    <div class="news reveal">
+      <h2 data-i="nl_t">Chegirmalardan birinchi bo'lib xabardor bo'ling</h2>
+      <p data-i="nl_p">Email qoldiring — yangi aksiyalar va birinchi buyurtmaga 10% promokod yuboramiz.</p>
+      <form id="nlForm"><input type="email" required data-iph="nl_ph" placeholder="Email manzilingiz"><button class="btn btn-a" type="submit" data-i="nl_b">Obuna bo'lish</button></form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="fgrid">
+      <div>
+        <a href="#home" class="logo">🥬 <span><b style="color:#5fd493">Fresh</b><em>Market</em></span></a>
+        <p style="margin-top:14px;max-width:320px" data-i="f_p">Yangi va sifatli oziq-ovqat mahsulotlari — oilangiz uchun.</p>
+        <div class="social"><a href="#" aria-label="Telegram">✈️</a><a href="#" aria-label="Instagram">📸</a><a href="#" aria-label="Facebook">📘</a></div>
+      </div>
+      <div><h4 data-i="f_h1">Bo'limlar</h4><ul>
+        <li><a href="#categories" data-i="nav_cat">Kategoriyalar</a></li>
+        <li><a href="#shop" data-i="nav_shop">Mahsulotlar</a></li>
+        <li><a href="#deal" data-i="nav_deal">Aksiya</a></li>
+        <li><a href="#why" data-i="nav_why">Afzalliklar</a></li></ul></div>
+      <div><h4 data-i="f_h2">Yordam</h4><ul>
+        <li><a href="#" data-i="f_l1">Yetkazib berish</a></li>
+        <li><a href="#" data-i="f_l2">To'lov usullari</a></li>
+        <li><a href="#" data-i="f_l3">Qaytarish siyosati</a></li>
+        <li><a href="#" data-i="f_l4">Savol-javob</a></li></ul></div>
+      <div><h4 data-i="f_h3">Aloqa</h4><ul>
+        <li><a href="tel:+998901234567">📞 +998 90 123 45 67</a></li>
+        <li><a href="mailto:info@freshmarket.uz">✉️ info@freshmarket.uz</a></li>
+        <li>📍 <span data-i="addr">Toshkent, O'zbekiston</span></li>
+        <li>🕘 <span data-i="hours">Har kuni 08:00 – 23:00</span></li></ul></div>
+    </div>
+    <div class="copy">© <span id="year">2026</span> FreshMarket. <span data-i="rights">Barcha huquqlar himoyalangan.</span></div>
+  </div>
+</footer>
+
+<button id="toTop" aria-label="Top">↑</button>
+
+<!-- cart drawer -->
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-label="Cart">
+  <div class="dr-head"><h3 data-i="cart_t">Savat</h3><button class="icon-btn" id="closeCart" aria-label="Close">✕</button></div>
+  <div class="dr-body" id="cartBody"></div>
+  <div class="dr-foot" id="cartFoot">
+    <div class="tot"><span data-i="total">Jami:</span><span id="cartTotal">0</span></div>
+    <form class="checkout" id="checkout">
+      <input class="form-in" id="cName" required data-iph="ph_name" placeholder="Ismingiz">
+      <input class="form-in" id="cPhone" required type="tel" data-iph="ph_phone" placeholder="+998 __ ___ __ __">
+      <input class="form-in" id="cAddr" required data-iph="ph_addr" placeholder="Manzil">
+      <button class="btn btn-p" type="submit" data-i="confirm">Buyurtmani tasdiqlash</button>
+    </form>
+    <button class="btn btn-p" id="goCheckout" data-i="checkout">Rasmiylashtirish</button>
+  </div>
+</aside>
+
+<!-- product modal -->
+<div class="modal" id="modal">
+  <div class="m-box">
+    <button class="m-close" id="mClose" aria-label="Close">✕</button>
+    <img id="mImg" alt="">
+    <div class="m-info">
+      <small id="mCat" style="color:var(--muted);text-transform:uppercase;letter-spacing:1px"></small>
+      <h3 id="mName"></h3>
+      <div class="stars" id="mStars"></div>
+      <p id="mDesc"></p>
+      <div class="m-price" id="mPrice"></div>
+      <button class="btn btn-p" id="mAdd" data-i="add_cart">Savatga qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= TARJIMALAR ================= */
+  var T = {
+    uz: {
+      nav_home:'Bosh sahifa',nav_cat:'Kategoriyalar',nav_shop:'Mahsulotlar',nav_deal:'Aksiya',nav_why:'Afzalliklar',nav_contact:'Aloqa',
+      hero_pill:"100% yangi va tabiiy",hero_t1:'Yangi mahsulotlar',hero_t2:'eshigingizgacha',
+      hero_p:"Fermer xo'jaliklaridan to'g'ridan-to'g'ri — meva, sabzavot, go'sht, sut mahsulotlari va yana minglab tovarlar. 60 daqiqada yetkazamiz.",
+      hero_b1:'Xarid qilish',hero_b2:'Aksiyalar',hm1:'Mahsulotlar',hm2:'Mijozlar',hm3:'Yetkazish',
+      fc1b:'Tez yetkazish',fc1s:'Bepul, 60 daqiqada',fc2s:'12 000+ sharh',
+      cat_eb:'Kategoriyalar',cat_t:'Nima qidiryapsiz?',cat_p:"Kerakli bo'limni tanlang — mahsulotlar darhol filtrlanadi.",
+      shop_eb:'Mahsulotlar',shop_t:'Eng yaxshi takliflar',shop_p:'Har kuni yangilanadigan sifatli mahsulotlar.',
+      search_ph:'Mahsulot qidirish...',s_def:'Tartib: standart',s_asc:'Narx: arzondan qimmatga',s_desc:'Narx: qimmatdan arzonga',s_rate:"Reyting bo'yicha",
+      deal_pill:'Haftalik aksiya',deal_t:'Barcha mevalarga 30% chegirma!',deal_p:"Faqat shu hafta: yangi mavsum mevalari maxsus narxlarda. Shoshiling, miqdor cheklangan!",
+      t_d:'kun',t_h:'soat',t_m:'daqiqa',t_s:'soniya',deal_b:'Hozir xarid qilish',
+      why_eb:'Afzalliklarimiz',why_t:'Nega aynan FreshMarket?',why_p:'Sifat, tezlik va ishonch — har bir buyurtmada.',
+      w1t:'Tabiiy va yangi',w1p:'Mahsulotlar fermerlardan kunlik keltiriladi.',w2t:'Tez yetkazish',w2p:'Buyurtmangiz 60 daqiqa ichida eshigingizda.',
+      w3t:"Qulay to'lov",w3p:"Naqd, karta yoki onlayn — o'zingizga qulay usulda.",w4t:'Sifat kafolati',w4p:'Mos kelmasa — pulni qaytaramiz yoki almashtiramiz.',
+      st_eb:'Qanday ishlaydi',st_t:'3 qadamda buyurtma',st1t:'Tanlang',st1p:"Katalogdan kerakli mahsulotlarni savatga qo'shing.",
+      st2t:'Buyurtma bering',st2p:'Manzil va telefon raqamingizni kiriting.',st3t:'Qabul qiling',st3p:'Kuryer mahsulotlarni eshigingizgacha olib keladi.',
+      sx3:'Hamkor fermerlar',sx4:'Mamnun mijozlar',tm_eb:'Sharhlar',tm_t:'Mijozlarimiz nima deydi',
+      nl_t:"Chegirmalardan birinchi bo'lib xabardor bo'ling",nl_p:'Email qoldiring — yangi aksiyalar va birinchi buyurtmaga 10% promokod yuboramiz.',
+      nl_ph:'Email manzilingiz',nl_b:"Obuna bo'lish",nl_ok:"Rahmat! Obuna muvaffaqiyatli ✅",
+      f_p:'Yangi va sifatli oziq-ovqat mahsulotlari — oilangiz uchun.',f_h1:"Bo'limlar",f_h2:'Yordam',f_h3:'Aloqa',
+      f_l1:'Yetkazib berish',f_l2:"To'lov usullari",f_l3:'Qaytarish siyosati',f_l4:'Savol-javob',
+      addr:"Toshkent, O'zbekiston",hours:'Har kuni 08:00 – 23:00',rights:'Barcha huquqlar himoyalangan.',
+      cart_t:'Savat',total:'Jami:',checkout:'Rasmiylashtirish',confirm:'Buyurtmani tasdiqlash',
+      ph_name:'Ismingiz',ph_phone:'Telefon raqam',ph_addr:'Yetkazish manzili',
+      add_cart:"Savatga qo'shish",added:"savatga qo'shildi",empty:"Savat bo'sh",empty_sub:"Mahsulot qo'shing",
+      no_res:'Hech narsa topilmadi 😕',order_ok:"Buyurtmangiz qabul qilindi! Tez orada bog'lanamiz 🎉",
+      sum:"so'm",all:'Hammasi',rev:'sharh',strip:"🚚 1 000 000 so'mdan ortiq buyurtmaga bepul yetkazish",strip2:'🎁 Birinchi buyurtmaga 10% chegirma',strip3:'⭐ 100% yangi mahsulotlar'
+    },
+    ru: {
+      nav_home:'Главная',nav_cat:'Категории',nav_shop:'Товары',nav_deal:'Акции',nav_why:'Преимущества',nav_contact:'Контакты',
+      hero_pill:'100% свежее и натуральное',hero_t1:'Свежие продукты',hero_t2:'прямо к вашей двери',
+      hero_p:'Напрямую с фермерских хозяйств — фрукты, овощи, мясо, молочные продукты и тысячи других товаров. Доставим за 60 минут.',
+      hero_b1:'Купить',hero_b2:'Акции',hm1:'Товаров',hm2:'Клиентов',hm3:'Доставка',
+      fc1b:'Быстрая доставка',fc1s:'Бесплатно, за 60 минут',fc2s:'12 000+ отзывов',
+      cat_eb:'Категории',cat_t:'Что вы ищете?',cat_p:'Выберите раздел — товары отфильтруются мгновенно.',
+      shop_eb:'Товары',shop_t:'Лучшие предложения',shop_p:'Качественные продукты, обновляемые каждый день.',
+      search_ph:'Поиск товара...',s_def:'Сортировка: по умолчанию',s_asc:'Цена: по возрастанию',s_desc:'Цена: по убыванию',s_rate:'По рейтингу',
+      deal_pill:'Акция недели',deal_t:'Скидка 30% на все фрукты!',deal_p:'Только на этой неделе: фрукты нового сезона по специальным ценам. Спешите, количество ограничено!',
+      t_d:'дн',t_h:'час',t_m:'мин',t_s:'сек',deal_b:'Купить сейчас',
+      why_eb:'Наши преимущества',why_t:'Почему именно FreshMarket?',why_p:'Качество, скорость и доверие — в каждом заказе.',
+      w1t:'Натурально и свежо',w1p:'Продукты привозят от фермеров ежедневно.',w2t:'Быстрая доставка',w2p:'Ваш заказ у двери за 60 минут.',
+      w3t:'Удобная оплата',w3p:'Наличные, карта или онлайн — как вам удобно.',w4t:'Гарантия качества',w4p:'Не подошло — вернём деньги или заменим.',
+      st_eb:'Как это работает',st_t:'Заказ в 3 шага',st1t:'Выберите',st1p:'Добавьте нужные товары из каталога в корзину.',
+      st2t:'Оформите заказ',st2p:'Укажите адрес и номер телефона.',st3t:'Получите',st3p:'Курьер привезёт продукты к вашей двери.',
+      sx3:'Партнёров-фермеров',sx4:'Довольных клиентов',tm_eb:'Отзывы',tm_t:'Что говорят наши клиенты',
+      nl_t:'Узнавайте о скидках первыми',nl_p:'Оставьте email — пришлём новые акции и промокод на 10% на первый заказ.',
+      nl_ph:'Ваш email',nl_b:'Подписаться',nl_ok:'Спасибо! Вы подписаны ✅',
+      f_p:'Свежие и качественные продукты питания — для вашей семьи.',f_h1:'Разделы',f_h2:'Помощь',f_h3:'Контакты',
+      f_l1:'Доставка',f_l2:'Способы оплаты',f_l3:'Политика возврата',f_l4:'Вопросы и ответы',
+      addr:'Ташкент, Узбекистан',hours:'Ежедневно 08:00 – 23:00',rights:'Все права защищены.',
+      cart_t:'Корзина',total:'Итого:',checkout:'Оформить заказ',confirm:'Подтвердить заказ',
+      ph_name:'Ваше имя',ph_phone:'Номер телефона',ph_addr:'Адрес доставки',
+      add_cart:'В корзину',added:'добавлено в корзину',empty:'Корзина пуста',empty_sub:'Добавьте товары',
+      no_res:'Ничего не найдено 😕',order_ok:'Ваш заказ принят! Скоро свяжемся 🎉',
+      sum:'сум',all:'Все',rev:'отзывов',strip:'🚚 Бесплатная доставка при заказе от 1 000 000 сум',strip2:'🎁 Скидка 10% на первый заказ',strip3:'⭐ 100% свежие продукты'
+    },
+    en: {
+      nav_home:'Home',nav_cat:'Categories',nav_shop:'Products',nav_deal:'Deals',nav_why:'Why us',nav_contact:'Contact',
+      hero_pill:'100% fresh & natural',hero_t1:'Fresh groceries',hero_t2:'to your doorstep',
+      hero_p:'Straight from the farms — fruit, vegetables, meat, dairy and thousands more products. Delivered in 60 minutes.',
+      hero_b1:'Shop now',hero_b2:'Deals',hm1:'Products',hm2:'Customers',hm3:'Delivery',
+      fc1b:'Fast delivery',fc1s:'Free, within 60 minutes',fc2s:'12,000+ reviews',
+      cat_eb:'Categories',cat_t:'What are you looking for?',cat_p:'Pick a section — products filter instantly.',
+      shop_eb:'Products',shop_t:'Best offers',shop_p:'Quality products refreshed every day.',
+      search_ph:'Search products...',s_def:'Sort: default',s_asc:'Price: low to high',s_desc:'Price: high to low',s_rate:'By rating',
+      deal_pill:'Deal of the week',deal_t:'30% off all fruits!',deal_p:'This week only: new-season fruit at special prices. Hurry, stock is limited!',
+      t_d:'days',t_h:'hrs',t_m:'min',t_s:'sec',deal_b:'Shop now',
+      why_eb:'Our advantages',why_t:'Why FreshMarket?',why_p:'Quality, speed and trust — in every order.',
+      w1t:'Natural & fresh',w1p:'Products arrive from farmers daily.',w2t:'Fast delivery',w2p:'Your order at your door in 60 minutes.',
+      w3t:'Easy payment',w3p:'Cash, card or online — whichever you prefer.',w4t:'Quality guarantee',w4p:"Not happy? We'll refund or replace it.",
+      st_eb:'How it works',st_t:'Order in 3 steps',st1t:'Choose',st1p:'Add the products you need from the catalog to your cart.',
+      st2t:'Place order',st2p:'Enter your address and phone number.',st3t:'Receive',st3p:'A courier brings the groceries to your door.',
+      sx3:'Partner farmers',sx4:'Happy customers',tm_eb:'Reviews',tm_t:'What our customers say',
+      nl_t:'Be the first to know about deals',nl_p:"Leave your email — we'll send new offers and a 10% promo code for your first order.",
+      nl_ph:'Your email',nl_b:'Subscribe',nl_ok:'Thanks! You are subscribed ✅',
+      f_p:'Fresh, quality groceries — for your family.',f_h1:'Sections',f_h2:'Help',f_h3:'Contact',
+      f_l1:'Delivery',f_l2:'Payment methods',f_l3:'Return policy',f_l4:'FAQ',
+      addr:'Tashkent, Uzbekistan',hours:'Daily 08:00 – 23:00',rights:'All rights reserved.',
+      cart_t:'Cart',total:'Total:',checkout:'Checkout',confirm:'Confirm order',
+      ph_name:'Your name',ph_phone:'Phone number',ph_addr:'Delivery address',
+      add_cart:'Add to cart',added:'added to cart',empty:'Your cart is empty',empty_sub:'Add some products',
+      no_res:'Nothing found 😕',order_ok:"Your order is placed! We'll contact you soon 🎉",
+      sum:'UZS',all:'All',rev:'reviews',strip:'🚚 Free delivery on orders over 1,000,000 UZS',strip2:'🎁 10% off your first order',strip3:'⭐ 100% fresh products'
+    }
+  };
+
+  /* ================= MA'LUMOTLAR ================= */
+  var CATS = [
+    {id:'fruits', e:'🍎', n:{uz:'Meva-sabzavot',ru:'Фрукты и овощи',en:'Fruit & veg'}},
+    {id:'meat',   e:'🥩', n:{uz:"Go'sht",ru:'Мясо',en:'Meat'}},
+    {id:'dairy',  e:'🥛', n:{uz:'Sut mahsulotlari',ru:'Молочные',en:'Dairy'}},
+    {id:'bakery', e:'🥖', n:{uz:'Non va pishiriq',ru:'Выпечка',en:'Bakery'}},
+    {id:'drinks', e:'🧃', n:{uz:'Ichimliklar',ru:'Напитки',en:'Drinks'}},
+    {id:'sweets', e:'🍫', n:{uz:'Shirinliklar',ru:'Сладости',en:'Sweets'}}
+  ];
+
+  var PRODUCTS = [
+    {id:1, c:'fruits', img:'photo-1560806887-1e4cd0b6cbd6', fb:'🍎', p:18000, old:24000, r:4.8, rv:214, tag:'sale',
+      n:{uz:'Qizil olma (1 kg)',ru:'Красные яблоки (1 кг)',en:'Red apples (1 kg)'},
+      d:{uz:"Shirin va qarsildoq mahalliy olma, bog'dan yangi uzilgan.",ru:'Сладкие хрустящие местные яблоки, свежесобранные в саду.',en:'Sweet, crunchy local apples picked fresh from the orchard.'}},
+    {id:2, c:'fruits', img:'photo-1592924357228-91a4daadcfea', fb:'🍅', p:14000, old:0, r:4.7, rv:167, tag:'new',
+      n:{uz:'Pomidor (1 kg)',ru:'Помидоры (1 кг)',en:'Tomatoes (1 kg)'},
+      d:{uz:"Issiqxonada emas, ochiq maydonda pishgan mazali pomidor.",ru:'Вкусные помидоры, созревшие на открытом грунте.',en:'Flavourful tomatoes ripened in open fields.'}},
+    {id:3, c:'fruits', img:'photo-1571771894821-ce9b6c11b08e', fb:'🍌', p:22000, old:28000, r:4.6, rv:132, tag:'sale',
+      n:{uz:'Banan (1 kg)',ru:'Бананы (1 кг)',en:'Bananas (1 kg)'},
+      d:{uz:"Energiyaga boy, pishgan va yumshoq bananlar.",ru:'Спелые мягкие бананы, богатые энергией.',en:'Ripe, soft bananas packed with energy.'}},
+    {id:4, c:'meat', img:'photo-1607623814075-e51df1bdc82f', fb:'🥩', p:98000, old:0, r:4.9, rv:305, tag:'',
+      n:{uz:"Mol go'shti (1 kg)",ru:'Говядина (1 кг)',en:'Beef (1 kg)'},
+      d:{uz:"Birinchi navli sof mol go'shti, suyaksiz.",ru:'Говядина высшего сорта, без кости.',en:'Premium boneless beef, first grade.'}},
+    {id:5, c:'meat', img:'photo-1604503468506-a8da13d82791', fb:'🍗', p:42000, old:48000, r:4.5, rv:189, tag:'sale',
+      n:{uz:'Tovuq filesi (1 kg)',ru:'Куриное филе (1 кг)',en:'Chicken fillet (1 kg)'},
+      d:{uz:"Sovutilgan, yangi tovuq ko'kragi filesi.",ru:'Охлаждённое свежее филе куриной грудки.',en:'Chilled, fresh chicken breast fillet.'}},
+    {id:6, c:'dairy', img:'photo-1550583724-b2692b85b150', fb:'🥛', p:11000, old:0, r:4.8, rv:276, tag:'new',
+      n:{uz:'Tabiiy sut (1 l)',ru:'Натуральное молоко (1 л)',en:'Natural milk (1 L)'},
+      d:{uz:"Fermer xo'jaligidan, qaynatilmagan, 3.2% yog'li sut.",ru:'С фермы, 3,2% жирности, натуральное.',en:'Farm-fresh milk, 3.2% fat, natural.'}},
+    {id:7, c:'dairy', img:'photo-1486297678162-eb2a19b0a32d', fb:'🧀', p:76000, old:85000, r:4.7, rv:98, tag:'sale',
+      n:{uz:'Pishloq (500 g)',ru:'Сыр (500 г)',en:'Cheese (500 g)'},
+      d:{uz:"Yetilgan, boy ta'mli qattiq pishloq.",ru:'Выдержанный твёрдый сыр с богатым вкусом.',en:'Aged hard cheese with a rich flavour.'}},
+    {id:8, c:'bakery', img:'photo-1509440159596-0249088772ff', fb:'🍞', p:8000, old:0, r:4.9, rv:421, tag:'',
+      n:{uz:'Tandir noni',ru:'Тандырная лепёшка',en:'Tandoor bread'},
+      d:{uz:"Har kuni ertalab tandirda yopilgan issiq non.",ru:'Горячая лепёшка, ежедневно из тандыра.',en:'Hot bread baked in a tandoor every morning.'}},
+    {id:9, c:'bakery', img:'photo-1555507036-ab1f4038808a', fb:'🥐', p:12000, old:15000, r:4.8, rv:143, tag:'new',
+      n:{uz:'Kruassan',ru:'Круассан',en:'Croissant'},
+      d:{uz:"Sariyog'li, qatlamli, yumshoq kruassan.",ru:'Слоёный масляный круассан.',en:'Buttery, flaky croissant.'}},
+    {id:10, c:'sweets', img:'photo-1511381939415-e44015466834', fb:'🍫', p:24000, old:0, r:4.7, rv:211, tag:'',
+      n:{uz:'Sutli shokolad',ru:'Молочный шоколад',en:'Milk chocolate'},
+      d:{uz:"Yumshoq ta'mli premium sutli shokolad.",ru:'Премиальный молочный шоколад с нежным вкусом.',en:'Premium milk chocolate with a smooth taste.'}},
+    {id:11, c:'drinks', img:'photo-1600271886742-f049cd451bba', fb:'🍊', p:19000, old:23000, r:4.6, rv:87, tag:'sale',
+      n:{uz:'Apelsin sharbati (1 l)',ru:'Апельсиновый сок (1 л)',en:'Orange juice (1 L)'},
+      d:{uz:"100% tabiiy, shakarsiz siqilgan sharbat.",ru:'100% натуральный сок прямого отжима без сахара.',en:'100% natural freshly squeezed juice, no added sugar.'}},
+    {id:12, c:'sweets', img:'photo-1587049352846-4a222e784d38', fb:'🍯', p:65000, old:0, r:5.0, rv:156, tag:'new',
+      n:{uz:'Tog\' asali (500 g)',ru:'Горный мёд (500 г)',en:'Mountain honey (500 g)'},
+      d:{uz:"Tog' o'tlaridan yig'ilgan sof tabiiy asal.",ru:'Чистый натуральный мёд с горных трав.',en:'Pure natural honey from mountain herbs.'}}
+  ];
+
+  var REVIEWS = [
+    {e:'👩', n:'Dilnoza K.', t:{uz:"Mahsulotlar juda yangi, kuryer 40 daqiqada olib keldi. Doim shu yerdan olaman!",ru:'Продукты очень свежие, курьер привёз за 40 минут. Теперь заказываю только здесь!',en:'Super fresh products and the courier arrived in 40 minutes. I only order here now!'}},
+    {e:'👨', n:'Jasur M.', t:{uz:"Go'sht sifati a'lo darajada. Narxlar ham hamyonbop, tavsiya qilaman.",ru:'Мясо отличного качества. Цены тоже приятные, рекомендую.',en:'Excellent meat quality and fair prices. Highly recommended.'}},
+    {e:'👵', n:'Malika opa', t:{uz:"Telefondan buyurtma berish juda oson, nevaralarim ham o'rganib olishdi.",ru:'Заказывать с телефона очень просто, даже внуки освоили.',en:'Ordering from my phone is so easy, even my grandkids got the hang of it.'}}
+  ];
+
+  /* ================= YORDAMCHILAR ================= */
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var root = document.documentElement;
+  var lang = 'uz', cat = 'all', query = '', sortBy = 'def', cart = {}, favs = {};
+
+  function imgUrl(id, w) { return 'https://images.unsplash.com/' + id + '?auto=format&fit=crop&w=' + (w || 600) + '&q=75'; }
+  function fallbackSvg(emoji) {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2e9e5b"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs><rect width="600" height="600" fill="url(#g)"/><text x="300" y="360" font-size="220" text-anchor="middle">' + (emoji || '🛒') + '</text></svg>';
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+  function money(n) { return n.toLocaleString('ru-RU').replace(/,/g, ' ') + ' ' + T[lang].sum; }
+  function tr(k) { return T[lang][k] !== undefined ? T[lang][k] : k; }
+  function stars(r) { var s = ''; for (var i = 1; i <= 5; i++) s += (r >= i - 0.25) ? '★' : '☆'; return s; }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function load(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v === null ? d : v; } catch (e) { return d; } }
+
+  /* rasm xatosi bo'lsa — zaxira */
+  document.addEventListener('error', function (e) {
+    var el = e.target;
+    if (el && el.tagName === 'IMG' && !el.dataset.failed) {
+      el.dataset.failed = '1';
+      el.src = fallbackSvg(el.dataset.fb || '🛒');
+    }
+  }, true);
+
+  function hydrateImages() {
+    $$('img[data-img]').forEach(function (im) {
+      if (!im.getAttribute('src')) im.src = imgUrl(im.dataset.img, im.dataset.w);
+    });
+  }
+
+  /* ================= TIL ================= */
+  function applyLang(l) {
+    if (!T[l]) l = 'uz';
+    lang = l; root.setAttribute('lang', l);
+    $$('[data-i]').forEach(function (el) { var v = T[l][el.dataset.i]; if (v !== undefined) el.textContent = v; });
+    $$('[data-iph]').forEach(function (el) { var v = T[l][el.dataset.iph]; if (v !== undefined) el.placeholder = v; });
+    $$('#lang button').forEach(function (b) { b.classList.toggle('active', b.dataset.l === l); });
+    save('fm_lang', l);
+    buildStrip(); renderCats(); renderProducts(); renderCart(); renderReviews();
+    if (modalId) openModal(modalId, true);
+  }
+
+  function buildStrip() {
+    var s = [tr('strip'), tr('strip2'), tr('strip3')];
+    var html = '';
+    for (var k = 0; k < 4; k++) s.forEach(function (x) { html += '<span>' + x + '</span>'; });
+    $('#stripTrack').innerHTML = html;
+  }
+
+  /* ================= KATEGORIYALAR ================= */
+  function renderCats() {
+    var h = '<div class="cat' + (cat === 'all' ? ' active' : '') + '" data-cat="all"><span class="ce">🛍️</span><b>' + tr('all') + '</b></div>';
+    CATS.forEach(function (c) {
+      h += '<div class="cat' + (cat === c.id ? ' active' : '') + '" data-cat="' + c.id + '"><span class="ce">' + c.e + '</span><b>' + c.n[lang] + '</b></div>';
+    });
+    $('#cats').innerHTML = h;
+  }
+
+  /* ================= MAHSULOTLAR ================= */
+  function catName(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i].n[lang]; return ''; }
+
+  function filtered() {
+    var q = query.trim().toLowerCase();
+    var list = PRODUCTS.filter(function (p) {
+      var okCat = cat === 'all' || p.c === cat;
+      var okQ = !q || p.n.uz.toLowerCase().indexOf(q) > -1 || p.n.ru.toLowerCase().indexOf(q) > -1 || p.n.en.toLowerCase().indexOf(q) > -1;
+      return okCat && okQ;
+    });
+    if (sortBy === 'asc') list.sort(function (a, b) { return a.p - b.p; });
+    if (sortBy === 'desc') list.sort(function (a, b) { return b.p - a.p; });
+    if (sortBy === 'rate') list.sort(function (a, b) { return b.r - a.r; });
+    return list;
+  }
+
+  function renderProducts() {
+    var list = filtered(), h = '';
+    if (!list.length) h = '<div class="no-res">' + tr('no_res') + '</div>';
+    list.forEach(function (p, i) {
+      var tag = p.tag === 'sale' ? '<span class="tag">-' + Math.round((1 - p.p / p.old) * 100) + '%</span>' : (p.tag === 'new' ? '<span class="tag new">NEW</span>' : '');
+      h += '<article class="card" style="animation:fadeUp .6s ' + (i * 0.05) + 's both">' +
+        '<div class="card-img" data-open="' + p.id + '">' + tag +
+        '<button class="fav" data-fav="' + p.id + '" aria-label="Favorite">' + (favs[p.id] ? '❤️' : '🤍') + '</button>' +
+        '<img src="' + imgUrl(p.img, 500) + '" data-fb="' + p.fb + '" alt="' + p.n[lang] + '" loading="lazy"></div>' +
+        '<div class="card-body"><small>' + catName(p.c) + '</small><h3>' + p.n[lang] + '</h3>' +
+        '<div class="stars">' + stars(p.r) + '<span>' + p.r.toFixed(1) + ' (' + p.rv + ')</span></div>' +
+        '<div class="price-row"><div class="price"><b>' + money(p.p) + '</b>' + (p.old ? '<s>' + money(p.old) + '</s>' : '') + '</div>' +
+        '<button class="add" data-add="' + p.id + '" aria-label="' + tr('add_cart') + '">+</button></div></div></article>';
+    });
+    $('#grid').innerHTML = h;
+  }
+
+  /* ================= SAVAT ================= */
+  function pById(id) { for (var i = 0; i < PRODUCTS.length; i++) if (PRODUCTS[i].id == id) return PRODUCTS[i]; return null; }
+
+  function addToCart(id) {
+    cart[id] = (cart[id] || 0) + 1; save('fm_cart', cart); renderCart();
+    var c = $('#cartCount'); c.classList.add('pop'); setTimeout(function () { c.classList.remove('pop'); }, 300);
+    toast('🛒 ' + pById(id).n[lang] + ' ' + tr('added'));
+  }
+
+  function renderCart() {
+    var ids = Object.keys(cart).filter(function (k) { return cart[k] > 0; });
+    var count = 0, total = 0, h = '';
+    ids.forEach(function (id) {
+      var p = pById(id); if (!p) return;
+      count += cart[id]; total += p.p * cart[id];
+      h += '<div class="ci"><img src="' + imgUrl(p.img, 200) + '" data-fb="' + p.fb + '" alt="">' +
+        '<div><b>' + p.n[lang] + '</b><small>' + money(p.p) + '</small>' +
+        '<div class="qty"><button data-dec="' + id + '">−</button><span>' + cart[id] + '</span><button data-inc="' + id + '">+</button></div></div>' +
+        '<button class="rm" data-rm="' + id + '" aria-label="Remove">🗑</button></div>';
+    });
+    if (!ids.length) h = '<div class="empty-cart"><span>🧺</span><b>' + tr('empty') + '</b><p>' + tr('empty_sub') + '</p></div>';
+    $('#cartBody').innerHTML = h;
+    $('#cartCount').textContent = count;
+    $('#cartTotal').textContent = money(total);
+    $('#cartFoot').style.display = ids.length ? 'block' : 'none';
+    if (!ids.length) { $('#checkout').classList.remove('show'); $('#goCheckout').style.display = ''; }
+  }
+
+  function openCart() { $('#drawer').classList.add('show'); $('#overlay').classList.add('show'); document.body.classList.add('lock'); }
+  function closeCart() { $('#drawer').classList.remove('show'); if (!$('#modal').classList.contains('show')) { $('#overlay').classList.remove('show'); document.body.classList.remove('lock'); } }
+
+  /* ================= MODAL ================= */
+  var modalId = null;
+  function openModal(id, silent) {
+    var p = pById(id); if (!p) return; modalId = id;
+    var im = $('#mImg'); im.removeAttribute('data-failed'); im.dataset.fb = p.fb; im.src = imgUrl(p.img, 800); im.alt = p.n[lang];
+    $('#mCat').textContent = catName(p.c);
+    $('#mName').textContent = p.n[lang];
+    $('#mStars').innerHTML = stars(p.r) + '<span>' + p.r.toFixed(1) + ' (' + p.rv + ' ' + tr('rev') + ')</span>';
+    $('#mDesc').textContent = p.d[lang];
+    $('#mPrice').innerHTML = money(p.p) + (p.old ? '<s>' + money(p.old) + '</s>' : '');
+    $('#modal').classList.add('show'); $('#overlay').classList.add('show'); document.body.classList.add('lock');
+  }
+  function closeModal() { modalId = null; $('#modal').classList.remove('show'); if (!$('#drawer').classList.contains('show')) { $('#overlay').classList.remove('show'); document.body.classList.remove('lock'); } }
+
+  /* ================= TOAST ================= */
+  var tt;
+  function toast(msg) { var t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(function () { t.classList.remove('show'); }, 2400); }
+
+  /* ================= SHARHLAR ================= */
+  var tIndex = 0, tTimer;
+  function renderReviews() {
+    var h = '', d = '';
+    REVIEWS.forEach(function (r, i) {
+      h += '<div class="tcard"><div class="av">' + r.e + '</div><p>“' + r.t[lang] + '”</p><b>' + r.n + '</b><small>★★★★★</small></div>';
+      d += '<button class="' + (i === tIndex ? 'on' : '') + '" data-t="' + i + '" aria-label="Slide ' + (i + 1) + '"></button>';
+    });
+    $('#ttrack').innerHTML = h; $('#dots').innerHTML = d; slideTo(tIndex);
+  }
+  function slideTo(i) {
+    tIndex = (i + REVIEWS.length) % REVIEWS.length;
+    $('#ttrack').style.transform = 'translateX(-' + (tIndex * 100) + '%)';
+    $$('#dots button').forEach(function (b, k) { b.classList.toggle('on', k === tIndex); });
+  }
+  function autoSlide() { clearInterval(tTimer); tTimer = setInterval(function () { slideTo(tIndex + 1); }, 5500); }
+
+  /* ================= HODISALAR ================= */
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    var el;
+    if ((el = t.closest('[data-add]'))) { e.stopPropagation(); addToCart(el.dataset.add); return; }
+    if ((el = t.closest('[data-fav]'))) { e.stopPropagation(); var id = el.dataset.fav; favs[id] = !favs[id]; save('fm_favs', favs); el.textContent = favs[id] ? '❤️' : '🤍'; return; }
+    if ((el = t.closest('[data-open]'))) { openModal(el.dataset.open); return; }
+    if ((el = t.closest('[data-cat]'))) { cat = el.dataset.cat; renderCats(); renderProducts(); document.getElementById('shop').scrollIntoView({behavior:'smooth'}); return; }
+    if ((el = t.closest('[data-filter]'))) { cat = el.dataset.filter; renderCats(); renderProducts(); return; }
+    if ((el = t.closest('[data-inc]'))) { cart[el.dataset.inc]++; save('fm_cart', cart); renderCart(); return; }
+    if ((el = t.closest('[data-dec]'))) { var k = el.dataset.dec; cart[k]--; if (cart[k] <= 0) delete cart[k]; save('fm_cart', cart); renderCart(); return; }
+    if ((el = t.closest('[data-rm]'))) { delete cart[el.dataset.rm]; save('fm_cart', cart); renderCart(); return; }
+    if ((el = t.closest('[data-t]'))) { slideTo(+el.dataset.t); autoSlide(); return; }
+  });
+
+  $('#lang').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) applyLang(b.dataset.l); });
+  $('#q').addEventListener('input', function (e) { query = e.target.value; renderProducts(); });
+  $('#sort').addEventListener('change', function (e) { sortBy = e.target.value; renderProducts(); });
+  $('#cartBtn').addEventListener('click', openCart);
+  $('#closeCart').addEventListener('click', closeCart);
+  $('#overlay').addEventListener('click', function () { closeCart(); closeModal(); });
+  $('#mClose').addEventListener('click', closeModal);
+  $('#modal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+  $('#mAdd').addEventListener('click', function () { if (modalId) { addToCart(modalId); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeCart(); closeModal(); } });
+
+  $('#goCheckout').addEventListener('click', function () { $('#checkout').classList.add('show'); this.style.display = 'none'; $('#cName').focus(); });
+  $('#checkout').addEventListener('submit', function (e) {
+    e.preventDefault();
+    /* Bu yerda buyurtmani Django backendga yuborish mumkin: fetch('/order/', {method:'POST', body: JSON.stringify({...})}) */
+    cart = {}; save('fm_cart', cart); renderCart(); this.reset(); closeCart(); toast(tr('order_ok'));
+  });
+  $('#nlForm').addEventListener('submit', function (e) { e.preventDefault(); this.reset(); toast(tr('nl_ok')); });
+
+  /* tema */
+  var themeBtn = $('#themeBtn');
+  function paintTheme() { themeBtn.textContent = root.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙'; }
+  themeBtn.addEventListener('click', function () {
+    var n = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', n); try { localStorage.setItem('fm_theme', n); } catch (e) {} paintTheme();
+  });
+
+  /* navbar / progress / to-top / aktiv menyu */
+  var nav = $('#navbar'), bar = $('#progress'), toTop = $('#toTop');
+  var secs = ['home', 'categories', 'shop', 'deal', 'why', 'contact'].map(function (id) { return document.getElementById(id); });
+  var mlinks = $$('#navLinks a');
+  function onScroll() {
+    var y = window.scrollY, h = document.documentElement.scrollHeight - window.innerHeight;
+    nav.classList.toggle('scrolled', y > 40);
+    bar.style.width = (h > 0 ? y / h * 100 : 0) + '%';
+    toTop.classList.toggle('show', y > 600);
+    var cur = 'home', pos = y + 160;
+    secs.forEach(function (s) { if (s && s.offsetTop <= pos) cur = s.id; });
+    mlinks.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + cur); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  /* burger */
+  $('#burger').addEventListener('click', function () { $('#navLinks').classList.toggle('open'); });
+  mlinks.forEach(function (a) { a.addEventListener('click', function () { $('#navLinks').classList.remove('open'); }); });
+
+  /* reveal */
+  var io = new IntersectionObserver(function (en) {
+    en.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('show'); io.unobserve(x.target); } });
+  }, { threshold: 0.12 });
+  $$('.reveal').forEach(function (el) { io.observe(el); });
+
+  /* sanagich raqamlar */
+  function runCount(el) {
+    var target = parseInt(el.dataset.count, 10) || 0, suf = el.dataset.suf || '', st = null, dur = 1800;
+    function step(ts) {
+      if (!st) st = ts;
+      var p = Math.min((ts - st) / dur, 1), v = Math.floor((1 - Math.pow(1 - p, 3)) * target);
+      el.textContent = v.toLocaleString('ru-RU').replace(/,/g, ' ') + suf;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var cio = new IntersectionObserver(function (en) {
+    en.forEach(function (x) { if (x.isIntersecting) { runCount(x.target); cio.unobserve(x.target); } });
+  }, { threshold: 0.5 });
+  $$('[data-count]').forEach(function (el) { cio.observe(el); });
+
+  /* taymer (har safar 7 kunlik aksiya) */
+  var end = load('fm_deal_end', 0);
+  if (!end || end < Date.now()) { end = Date.now() + 5 * 24 * 3600 * 1000 + 7 * 3600 * 1000; save('fm_deal_end', end); }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function tick() {
+    var d = Math.max(0, end - Date.now()), s = Math.floor(d / 1000);
+    $('#td').textContent = pad(Math.floor(s / 86400));
+    $('#th').textContent = pad(Math.floor(s % 86400 / 3600));
+    $('#tm').textContent = pad(Math.floor(s % 3600 / 60));
+    $('#ts').textContent = pad(s % 60);
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* hero parallax */
+  if (window.matchMedia('(hover: hover)').matches) {
+    var art = $('.hero-art');
+    if (art) {
+      document.querySelector('.hero').addEventListener('mousemove', function (e) {
+        var x = (e.clientX / window.innerWidth - 0.5) * 14, y = (e.clientY / window.innerHeight - 0.5) * 14;
+        art.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+      });
+    }
+  }
+
+  /* ================= BOSHLASH ================= */
+  cart = load('fm_cart', {}); favs = load('fm_favs', {});
+  hydrateImages(); paintTheme();
+  var savedLang = 'uz'; try { savedLang = localStorage.getItem('fm_lang') || 'uz'; } catch (e) {}
+  // fm_lang JSON bilan saqlangan bo'lishi mumkin
+  try { savedLang = JSON.parse(savedLang); } catch (e) {}
+  applyLang(savedLang);
+  autoSlide();
+  $('#year').textContent = new Date().getFullYear();
+  window.addEventListener('load', function () { setTimeout(function () { $('#loader').classList.add('hide'); }, 450); });
+  setTimeout(function () { $('#loader').classList.add('hide'); }, 3000);
+})();
+</script>
+</body>
+</html>
