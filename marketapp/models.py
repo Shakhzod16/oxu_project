@@ -36,7 +36,7 @@ class Product(models.Model):
     def main_image(self):
         imgs = list(self.images.all())
         return next((i for i in imgs if i.is_main), imgs[0] if imgs else None)
-
+    
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='products/')
@@ -44,7 +44,7 @@ class ProductImage(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    phone = models.CharField("Telefon", max_length=13, blank=True)
+    phone = models.CharField("Telefon", max_length=13, blank=True)  
     address = models.TextField("Manzil", blank=True)
 
     def __str__(self):

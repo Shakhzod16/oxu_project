@@ -49,7 +49,7 @@ class Cart:
 
     def total_price(self):
         return sum((item['total'] for item in self), Decimal('0'))
-        
+
 def cart_count(request):
        return {'cart_count': len(Cart(request))}
 
